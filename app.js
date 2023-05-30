@@ -3,14 +3,15 @@ const mongoose = require("mongoose");
 const bookRoutes = require("./routes/books");
 const authRoutes = require("./routes/auth");
 const path = require("path");
+require("dotenv").config({ path: "./.env.local" });
 
 const app = express();
 
 mongoose
-    .connect(
-        "mongodb+srv://Anthony:3mdntri42hSrfdju@cluster0.zohb5yz.mongodb.net/?retryWrites=true&w=majority",
-        { useNewUrlParser: true, useUnifiedTopology: true }
-    )
+    .connect(process.env.DATABASE_URL, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    })
     .then(() => console.log("Connexion à MongoDB réussie !"))
     .catch(() => console.log("Connexion à MongoDB échouée !"));
 
