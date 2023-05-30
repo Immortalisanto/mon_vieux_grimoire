@@ -1,17 +1,25 @@
 const Book = require("../models/Book");
 
 exports.getAllBooks = (req, res, next) => {
+    console.log("Début getAllBooks");
+
     Book.find()
-        .then((books) => res.status(200).json(books))
+        .then((books) => {
+            res.status(200).json(books);
+
+            console.log("getAllBooks OK");
+        })
         .catch((error) => res.status(400).json({ error }));
 };
 
 exports.createBook = (req, res, next) => {
+    console.log("Début createBook");
+
     const bookObject = JSON.parse(req.body.book);
     delete bookObject._id;
     delete bookObject._userId;
 
-    console.log(bookObject);
+    console.log("Tentative de création :", bookObject);
 
     const book = new Book({
         ...bookObject,
@@ -21,9 +29,13 @@ exports.createBook = (req, res, next) => {
         }`,
     });
 
+    console.log("Schéma prêt");
+
     book.save()
         .then(() => {
             res.status(201).json({ message: "Objet enregistré !" });
+
+            console.log("createBook OK");
         })
         .catch((error) => {
             res.status(400).json({ error });
