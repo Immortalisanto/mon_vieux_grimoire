@@ -15,6 +15,11 @@ exports.getAllBooks = (req, res, next) => {
 exports.createBook = (req, res, next) => {
     console.log("Début createBook");
 
+    console.log(
+        "createBook avant le JSON.parse et les delete :",
+        req.body.book
+    );
+
     const bookObject = JSON.parse(req.body.book);
     delete bookObject._id;
     delete bookObject._userId;
