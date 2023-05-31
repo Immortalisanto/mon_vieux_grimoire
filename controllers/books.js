@@ -26,12 +26,12 @@ exports.createBook = (req, res, next) => {
 
     console.log("Tentative de création :", bookObject);
 
+    const imageName = res.locals.imageName;
+
     const book = new Book({
         ...bookObject,
         userId: req.auth.userId,
-        imageUrl: `${req.protocol}://${req.get("host")}/images/${
-            req.file.filename
-        }`,
+        imageUrl: `${req.protocol}://${req.get("host")}/images/${imageName}`,
     });
 
     console.log("Schéma prêt");
