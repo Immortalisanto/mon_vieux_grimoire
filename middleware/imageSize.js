@@ -34,7 +34,7 @@ module.exports = async (req, res, next) => {
     console.log("buffer :", buffer);
 
     try {
-        await sharp(buffer).resize(210).toFile(ref);
+        await sharp(buffer).resize(400).toFile(ref);
 
         console.log("buffer after sharp :", buffer);
     } catch (error) {

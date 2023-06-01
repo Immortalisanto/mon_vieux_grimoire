@@ -8,6 +8,8 @@ const bookControllers = require("../controllers/books");
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
+router.get("/bestrating", bookControllers.getThreeBestRating);
+router.get("/:id", bookControllers.getOneBook);
 router.get("/", bookControllers.getAllBooks);
 router.post(
     "/",
