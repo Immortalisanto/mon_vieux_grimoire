@@ -1,4 +1,5 @@
 const Book = require("../models/Book");
+const { deleteImage } = require("../functions/deleteImage");
 
 exports.getAllBooks = (req, res, next) => {
     console.log("Début getAllBooks");
@@ -77,4 +78,55 @@ exports.createBook = (req, res, next) => {
         .catch((error) => {
             res.status(400).json({ error });
         });
+};
+
+exports.putOneBook = (req, res, next) => {
+    console.log("Début putOneBook");
+
+    const imageName = res.locals.imageName;
+
+    const bookObject = req.file
+        ? {
+              ...JSON.parse(req.body.book),
+              imageUrl: `${req.protocol}://${req.get(
+                  "host"
+              )}/images/${imageName}`,
+          }
+        : { ...req.body };
+
+    console.log("bookObject :", bookObject);
+
+    delete bookObject._userId;
+    Book.findOne({ _id: req.params.id })
+        .then((book) => {
+            if (book.userId != req.auth.userId) {
+                res.status(401).json({ message: "Not authorized" });
+            } else {
+                const oldImage = book.imageUrl.replace(
+                    "http://localhost:4000/images/",
+                    "backend/images/"
+                );
+
+                console.log("oldImage :", oldImage);
+
+                Book.updateOne(
+                    { _id: req.params.id },
+                    { ...bookObject, _id: req.params.id }
+                )
+                    .then(() => {
+                        console.log("début update");
+
+                        if (oldImage) {
+                            console.log("condition oldImage OK");
+
+                            deleteImage(oldImage);
+                        }
+                        res.status(200).json({ message: "Objet modifié " });
+
+                        console.log("putOneBook OK");
+                    })
+                    .catch((error) => res.status(401).json({ error }));
+            }
+        })
+        .catch((error) => res.status(400).json({ error }));
 };

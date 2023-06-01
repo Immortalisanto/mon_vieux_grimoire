@@ -18,5 +18,12 @@ router.post(
     imageSize,
     bookControllers.createBook
 );
+router.put(
+    "/:id",
+    auth,
+    upload.single("image"),
+    imageSize,
+    bookControllers.putOneBook
+);
 
 module.exports = router;
