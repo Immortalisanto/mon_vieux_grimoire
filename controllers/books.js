@@ -155,3 +155,34 @@ exports.deleteOneBook = (req, res, next) => {
         })
         .catch((error) => res.status(500).json({ error }));
 };
+
+exports.addRating = (req, res, next) => {
+    console.log("Début addRating");
+
+    const { userId, rating } = req.body;
+
+    console.log("Tentative de création d'une nouvelle note :", userId, rating);
+
+    Book.findOne({ _id: req.params.id })
+        .then((book) => {
+            if (userId != req.auth.userId) {
+                res.status(401).json({ message: "Not authorized" });
+            } else {
+                book.ratings.push({ userId, grade: rating });
+
+                let totalRating = 0;
+                book.ratings.forEach((rating) => {
+                    totalRating += rating.grade;
+                });
+                const averageRatingBeforeRounded =
+                    totalRating / book.ratings.length;
+
+                book.averageRating = averageRatingBeforeRounded.toFixed(2);
+
+                book.save();
+            }
+            res.status(200).json(book);
+            console.log("addRating OK");
+        })
+        .catch((error) => res.status(500).json({ error }));
+};

@@ -26,5 +26,6 @@ router.put(
     bookControllers.putOneBook
 );
 router.delete("/:id", auth, bookControllers.deleteOneBook);
+router.post("/:id/rating", auth, bookControllers.addRating);
 
 module.exports = router;
