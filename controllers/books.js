@@ -130,3 +130,28 @@ exports.putOneBook = (req, res, next) => {
         })
         .catch((error) => res.status(400).json({ error }));
 };
+
+exports.deleteOneBook = (req, res, next) => {
+    console.log("Début deleteOneBook");
+
+    Book.findOne({ _id: req.params.id })
+        .then((book) => {
+            if (book.userId != req.auth.userId) {
+                res.status(401).json({ message: "Not authorized" });
+            } else {
+                const oldImage = book.imageUrl.replace(
+                    "http://localhost:4000/images/",
+                    "backend/images/"
+                );
+                deleteImage(oldImage);
+                Book.deleteOne({ _id: req.params.id })
+                    .then(() => {
+                        res.status(200).json({ message: "Livre supprimé" });
+
+                        console.log("deleteOneBook OK");
+                    })
+                    .catch((error) => res.status(401).json({ error }));
+            }
+        })
+        .catch((error) => res.status(500).json({ error }));
+};

@@ -25,5 +25,6 @@ router.put(
     imageSize,
     bookControllers.putOneBook
 );
+router.delete("/:id", auth, bookControllers.deleteOneBook);
 
 module.exports = router;
