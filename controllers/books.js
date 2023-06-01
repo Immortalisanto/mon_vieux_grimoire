@@ -116,7 +116,7 @@ exports.putOneBook = (req, res, next) => {
                     .then(() => {
                         console.log("début update");
 
-                        if (oldImage) {
+                        if (req.file) {
                             console.log("condition oldImage OK");
 
                             deleteImage(oldImage);
