@@ -11,20 +11,8 @@ const upload = multer({ storage });
 router.get("/bestrating", bookControllers.getThreeBestRating);
 router.get("/:id", bookControllers.getOneBook);
 router.get("/", bookControllers.getAllBooks);
-router.post(
-    "/",
-    auth,
-    upload.single("image"),
-    imageSize,
-    bookControllers.createBook
-);
-router.put(
-    "/:id",
-    auth,
-    upload.single("image"),
-    imageSize,
-    bookControllers.putOneBook
-);
+router.post("/", auth, upload.single("image"), imageSize, bookControllers.createBook);
+router.put("/:id", auth, upload.single("image"), imageSize, bookControllers.putOneBook);
 router.delete("/:id", auth, bookControllers.deleteOneBook);
 router.post("/:id/rating", auth, bookControllers.addRating);
 

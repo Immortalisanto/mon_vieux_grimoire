@@ -32,8 +32,7 @@ exports.getThreeBestRating = async (req, res, next) => {
         const books = await Book.find().sort({ averageRating: -1 }).limit(3);
 
         const formattedBooks = books.map((book) => {
-            const { _id, title, author, year, genre, imageUrl, averageRating } =
-                book;
+            const { _id, title, author, year, genre, imageUrl, averageRating } = book;
             return { _id, title, author, year, genre, imageUrl, averageRating };
         });
 
@@ -48,10 +47,7 @@ exports.getThreeBestRating = async (req, res, next) => {
 exports.createBook = (req, res, next) => {
     console.log("Début createBook");
 
-    console.log(
-        "createBook avant le JSON.parse et les delete :",
-        req.body.book
-    );
+    console.log("createBook avant le JSON.parse et les delete :", req.body.book);
 
     const bookObject = JSON.parse(req.body.book);
     delete bookObject._id;
@@ -88,9 +84,7 @@ exports.putOneBook = (req, res, next) => {
     const bookObject = req.file
         ? {
               ...JSON.parse(req.body.book),
-              imageUrl: `${req.protocol}://${req.get(
-                  "host"
-              )}/images/${imageName}`,
+              imageUrl: `${req.protocol}://${req.get("host")}/images/${imageName}`,
           }
         : { ...req.body };
 
@@ -99,20 +93,15 @@ exports.putOneBook = (req, res, next) => {
     delete bookObject._userId;
     Book.findOne({ _id: req.params.id })
         .then((book) => {
+            // throw new Error
             if (book.userId != req.auth.userId) {
                 res.status(401).json({ message: "Not authorized" });
             } else {
-                const oldImage = book.imageUrl.replace(
-                    "http://localhost:4000/images/",
-                    "backend/images/"
-                );
+                const oldImage = book.imageUrl.replace("http://localhost:4000/images/", "backend/images/");
 
                 console.log("oldImage :", oldImage);
 
-                Book.updateOne(
-                    { _id: req.params.id },
-                    { ...bookObject, _id: req.params.id }
-                )
+                Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id })
                     .then(() => {
                         console.log("début update");
 
@@ -139,10 +128,7 @@ exports.deleteOneBook = (req, res, next) => {
             if (book.userId != req.auth.userId) {
                 res.status(401).json({ message: "Not authorized" });
             } else {
-                const oldImage = book.imageUrl.replace(
-                    "http://localhost:4000/images/",
-                    "backend/images/"
-                );
+                const oldImage = book.imageUrl.replace("http://localhost:4000/images/", "backend/images/");
                 deleteImage(oldImage);
                 Book.deleteOne({ _id: req.params.id })
                     .then(() => {
@@ -167,6 +153,7 @@ exports.addRating = (req, res, next) => {
         .then((book) => {
             if (userId != req.auth.userId) {
                 res.status(401).json({ message: "Not authorized" });
+                return;
             } else {
                 book.ratings.push({ userId, grade: rating });
 
@@ -174,8 +161,7 @@ exports.addRating = (req, res, next) => {
                 book.ratings.forEach((rating) => {
                     totalRating += rating.grade;
                 });
-                const averageRatingBeforeRounded =
-                    totalRating / book.ratings.length;
+                const averageRatingBeforeRounded = totalRating / book.ratings.length;
 
                 book.averageRating = averageRatingBeforeRounded.toFixed(2);
 
