@@ -73,6 +73,7 @@ exports.createBook = (req, res, next) => {
         })
         .catch((error) => {
             res.status(400).json({ error });
+            deleteImage(`backend/images/${imageName}`);
         });
 };
 
@@ -93,11 +94,11 @@ exports.putOneBook = (req, res, next) => {
     delete bookObject._userId;
     Book.findOne({ _id: req.params.id })
         .then((book) => {
-            // throw new Error
             if (book.userId != req.auth.userId) {
                 res.status(401).json({ message: "Not authorized" });
+                deleteImage(`backend/images/${imageName}`);
             } else {
-                const oldImage = book.imageUrl.replace("http://localhost:4000/images/", "backend/images/");
+                const oldImage = book.imageUrl.replace(`${req.protocol}://${req.get("host")}/`, "backend/");
 
                 console.log("oldImage :", oldImage);
 
@@ -114,10 +115,17 @@ exports.putOneBook = (req, res, next) => {
 
                         console.log("putOneBook OK");
                     })
-                    .catch((error) => res.status(401).json({ error }));
+                    .catch((error) => {
+                        res.status(401).json({ error });
+                        deleteImage(`backend/images/${imageName}`);
+                    });
             }
         })
-        .catch((error) => res.status(400).json({ error }));
+        .catch((error) => {
+            res.status(400).json({ error });
+            console.log("tentative suppression imageName :", imageName);
+            deleteImage(`backend/images/${imageName}`);
+        });
 };
 
 exports.deleteOneBook = (req, res, next) => {
@@ -128,7 +136,7 @@ exports.deleteOneBook = (req, res, next) => {
             if (book.userId != req.auth.userId) {
                 res.status(401).json({ message: "Not authorized" });
             } else {
-                const oldImage = book.imageUrl.replace("http://localhost:4000/images/", "backend/images/");
+                const oldImage = book.imageUrl.replace(`${req.protocol}://${req.get("host")}/`, "backend/");
                 deleteImage(oldImage);
                 Book.deleteOne({ _id: req.params.id })
                     .then(() => {
@@ -153,7 +161,6 @@ exports.addRating = (req, res, next) => {
         .then((book) => {
             if (userId != req.auth.userId) {
                 res.status(401).json({ message: "Not authorized" });
-                return;
             } else {
                 book.ratings.push({ userId, grade: rating });
 
@@ -165,10 +172,13 @@ exports.addRating = (req, res, next) => {
 
                 book.averageRating = averageRatingBeforeRounded.toFixed(2);
 
-                book.save();
+                book.save()
+                    .then(() => {
+                        res.status(200).json(book);
+                        console.log("addRating OK");
+                    })
+                    .catch((error) => res.status(401).json({ error }));
             }
-            res.status(200).json(book);
-            console.log("addRating OK");
         })
         .catch((error) => res.status(500).json({ error }));
 };
