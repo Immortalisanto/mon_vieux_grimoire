@@ -40,7 +40,7 @@ exports.getThreeBestRating = async (req, res, next) => {
 
         console.log("getThreeBestRating OK");
     } catch (error) {
-        res.status(500).json({ error });
+        res.status(400).json({ error });
     }
 };
 
@@ -116,13 +116,13 @@ exports.putOneBook = (req, res, next) => {
                         console.log("putOneBook OK");
                     })
                     .catch((error) => {
-                        res.status(401).json({ error });
+                        res.status(400).json({ error });
                         deleteImage(`backend/images/${imageName}`);
                     });
             }
         })
         .catch((error) => {
-            res.status(400).json({ error });
+            res.status(404).json({ error });
             console.log("tentative suppression imageName :", imageName);
             deleteImage(`backend/images/${imageName}`);
         });
@@ -144,10 +144,10 @@ exports.deleteOneBook = (req, res, next) => {
 
                         console.log("deleteOneBook OK");
                     })
-                    .catch((error) => res.status(401).json({ error }));
+                    .catch((error) => res.status(400).json({ error }));
             }
         })
-        .catch((error) => res.status(500).json({ error }));
+        .catch((error) => res.status(404).json({ error }));
 };
 
 exports.addRating = (req, res, next) => {
@@ -164,7 +164,7 @@ exports.addRating = (req, res, next) => {
             if (userId != req.auth.userId) {
                 res.status(401).json({ message: "Not authorized" });
             } else if (userHasRated) {
-                res.status(401).json({ message: "Une note a déjà été donnée par cet utilisateur" });
+                res.status(400).json({ message: "Une note a déjà été donnée par cet utilisateur" });
             } else {
                 book.ratings.push({ userId, grade: rating });
 
@@ -184,5 +184,5 @@ exports.addRating = (req, res, next) => {
                     .catch((error) => res.status(401).json({ error }));
             }
         })
-        .catch((error) => res.status(500).json({ error }));
+        .catch((error) => res.status(404).json({ error }));
 };
