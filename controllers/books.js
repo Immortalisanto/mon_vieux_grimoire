@@ -159,10 +159,11 @@ exports.addRating = (req, res, next) => {
 
     Book.findOne({ _id: req.params.id })
         .then((book) => {
-            console.log("userId dans le tableau :", book.ratings);
+            const userHasRated = book.ratings.some((rating) => rating.userId === userId);
+
             if (userId != req.auth.userId) {
                 res.status(401).json({ message: "Not authorized" });
-            } else if (book.ratings.includes(userId)) {
+            } else if (userHasRated) {
                 res.status(401).json({ message: "Une note a déjà été donnée par cet utilisateur" });
             } else {
                 book.ratings.push({ userId, grade: rating });
