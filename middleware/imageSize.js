@@ -1,7 +1,6 @@
 const sharp = require("sharp");
 const fs = require("fs");
 const path = require("path");
-const { timeStamp } = require("console");
 
 module.exports = async (req, res, next) => {
     if (!req.file) {

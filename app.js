@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const path = require("path");
 const bookRoutes = require("./routes/books");
 const authRoutes = require("./routes/auth");
+const errorHandler = require("./middleware/error");
 require("dotenv").config({ path: "./.env.local" });
 
 const app = express();
@@ -31,5 +32,15 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 
 app.use("/api/books", bookRoutes);
 app.use("/api/auth", authRoutes);
+
+app.use((error, req, res, next) => {
+    if (error.name === "ValidationError") {
+        res.status(400).json({ message: error.message });
+    } else {
+        next(error);
+    }
+});
+
+app.use(errorHandler);
 
 module.exports = app;

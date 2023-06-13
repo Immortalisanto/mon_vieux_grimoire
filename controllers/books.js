@@ -6,7 +6,7 @@ exports.getAllBooks = (req, res, next) => {
         .then((books) => {
             res.status(200).json(books);
         })
-        .catch((error) => res.status(400).json({ error }));
+        .catch((error) => next(error));
 };
 
 exports.getOneBook = (req, res, next) => {
@@ -14,7 +14,7 @@ exports.getOneBook = (req, res, next) => {
         .then((book) => {
             res.status(200).json(book);
         })
-        .catch((error) => res.status(404).json({ error }));
+        .catch((error) => next(error));
 };
 
 exports.getThreeBestRating = async (req, res, next) => {
@@ -28,7 +28,7 @@ exports.getThreeBestRating = async (req, res, next) => {
 
         res.json(formattedBooks);
     } catch (error) {
-        res.status(400).json({ error });
+        next(error);
     }
 };
 
@@ -48,8 +48,8 @@ exports.createBook = (req, res, next) => {
             res.status(201).json({ message: "Objet enregistré !" });
         })
         .catch((error) => {
-            res.status(400).json({ error });
             deleteImage(`backend/images/${imageName}`);
+            next(error);
         });
 };
 
@@ -67,7 +67,7 @@ exports.putOneBook = (req, res, next) => {
     Book.findOne({ _id: req.params.id })
         .then((book) => {
             if (book.userId != req.auth.userId) {
-                res.status(401).json({ message: "Not authorized" });
+                res.status(403).json({ message: "unauthorized request" });
                 deleteImage(`backend/images/${imageName}`);
             } else {
                 const oldImage = book.imageUrl.replace(`${req.protocol}://${req.get("host")}/`, "backend/");
@@ -80,14 +80,14 @@ exports.putOneBook = (req, res, next) => {
                         res.status(200).json({ message: "Objet modifié " });
                     })
                     .catch((error) => {
-                        res.status(400).json({ error });
                         deleteImage(`backend/images/${imageName}`);
+                        next(error);
                     });
             }
         })
         .catch((error) => {
-            res.status(404).json({ error });
             deleteImage(`backend/images/${imageName}`);
+            next(error);
         });
 };
 
@@ -95,7 +95,7 @@ exports.deleteOneBook = (req, res, next) => {
     Book.findOne({ _id: req.params.id })
         .then((book) => {
             if (book.userId != req.auth.userId) {
-                res.status(401).json({ message: "Not authorized" });
+                res.status(403).json({ message: "unauthorized request" });
             } else {
                 const oldImage = book.imageUrl.replace(`${req.protocol}://${req.get("host")}/`, "backend/");
                 deleteImage(oldImage);
@@ -103,10 +103,10 @@ exports.deleteOneBook = (req, res, next) => {
                     .then(() => {
                         res.status(200).json({ message: "Livre supprimé" });
                     })
-                    .catch((error) => res.status(400).json({ error }));
+                    .catch((error) => next(error));
             }
         })
-        .catch((error) => res.status(404).json({ error }));
+        .catch((error) => next(error));
 };
 
 exports.addRating = (req, res, next) => {
@@ -117,7 +117,7 @@ exports.addRating = (req, res, next) => {
             const userHasRated = book.ratings.some((rating) => rating.userId === userId);
 
             if (userId != req.auth.userId) {
-                res.status(401).json({ message: "Not authorized" });
+                res.status(403).json({ message: "unauthorized request" });
             } else if (userHasRated) {
                 res.status(400).json({ message: "Une note a déjà été donnée par cet utilisateur" });
             } else {
@@ -135,8 +135,8 @@ exports.addRating = (req, res, next) => {
                     .then(() => {
                         res.status(201).json(book);
                     })
-                    .catch((error) => res.status(400).json({ error }));
+                    .catch((error) => next(error));
             }
         })
-        .catch((error) => res.status(404).json({ error }));
+        .catch((error) => next(error));
 };
