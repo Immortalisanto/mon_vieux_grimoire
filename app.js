@@ -35,7 +35,7 @@ app.use("/api/auth", authRoutes);
 
 app.use((error, req, res, next) => {
     if (error.name === "ValidationError") {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({ error });
     } else {
         next(error);
     }
