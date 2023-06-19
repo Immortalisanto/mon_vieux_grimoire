@@ -13,7 +13,7 @@ module.exports = (error, req, res, next) => {
     } else if (error.message === "ERROR_FINDING_USER" || "ERROR_FINDING_BOOK") {
         res.status(404).json({ error });
     } else if (error.message === "ERROR_UNAUTHORIZED") {
-        res.status(403).json({ error });
+        res.status(403).json({ message: "unauthorized request" });
     } else if (error.message === "ERROR_DUPLICATE_RATE") {
         res.status(400).json({ error });
     } else {
