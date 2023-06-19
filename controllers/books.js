@@ -6,7 +6,7 @@ exports.getAllBooks = (req, res, next) => {
         .then((books) => {
             res.status(200).json(books);
         })
-        .catch((error) => next(error));
+        .catch(() => next(new Error("ERROR_FINDING_BOOK")));
 };
 
 exports.getOneBook = (req, res, next) => {
@@ -14,7 +14,7 @@ exports.getOneBook = (req, res, next) => {
         .then((book) => {
             res.status(200).json(book);
         })
-        .catch((error) => next(error));
+        .catch(() => next(new Error("ERROR_FINDING_BOOK")));
 };
 
 exports.getThreeBestRating = async (req, res, next) => {
@@ -28,7 +28,7 @@ exports.getThreeBestRating = async (req, res, next) => {
 
         res.json(formattedBooks);
     } catch (error) {
-        next(error);
+        next(new Error("ERROR_FINDING_BOOK"));
     }
 };
 
@@ -47,9 +47,9 @@ exports.createBook = (req, res, next) => {
         .then(() => {
             res.status(201).json({ message: "Objet enregistré !" });
         })
-        .catch((error) => {
+        .catch(() => {
             deleteImage(`backend/images/${imageName}`);
-            next(error);
+            next(new Error("ERROR_SAVING_BOOK"));
         });
 };
 
@@ -67,8 +67,8 @@ exports.putOneBook = (req, res, next) => {
     Book.findOne({ _id: req.params.id })
         .then((book) => {
             if (book.userId != req.auth.userId) {
-                res.status(403).json({ message: "unauthorized request" });
                 deleteImage(`backend/images/${imageName}`);
+                next(new Error("ERROR_UNAUTHORIZED"));
             } else {
                 const oldImage = book.imageUrl.replace(`${req.protocol}://${req.get("host")}/`, "backend/");
 
@@ -79,15 +79,15 @@ exports.putOneBook = (req, res, next) => {
                         }
                         res.status(200).json({ message: "Objet modifié " });
                     })
-                    .catch((error) => {
+                    .catch(() => {
                         deleteImage(`backend/images/${imageName}`);
-                        next(error);
+                        next(new Error("ERROR_UPDATE_BOOK"));
                     });
             }
         })
-        .catch((error) => {
+        .catch(() => {
             deleteImage(`backend/images/${imageName}`);
-            next(error);
+            next(new Error("ERROR_FINDING_BOOK"));
         });
 };
 
@@ -95,7 +95,7 @@ exports.deleteOneBook = (req, res, next) => {
     Book.findOne({ _id: req.params.id })
         .then((book) => {
             if (book.userId != req.auth.userId) {
-                res.status(403).json({ message: "unauthorized request" });
+                next(new Error("ERROR_UNAUTHORIZED"));
             } else {
                 const oldImage = book.imageUrl.replace(`${req.protocol}://${req.get("host")}/`, "backend/");
                 deleteImage(oldImage);
@@ -103,10 +103,10 @@ exports.deleteOneBook = (req, res, next) => {
                     .then(() => {
                         res.status(200).json({ message: "Livre supprimé" });
                     })
-                    .catch((error) => next(error));
+                    .catch(() => next(new Error("ERROR_DELETE_BOOK")));
             }
         })
-        .catch((error) => next(error));
+        .catch(() => next(new Error("ERROR_FINDING_BOOK")));
 };
 
 exports.addRating = (req, res, next) => {
@@ -117,9 +117,9 @@ exports.addRating = (req, res, next) => {
             const userHasRated = book.ratings.some((rating) => rating.userId === userId);
 
             if (userId != req.auth.userId) {
-                res.status(403).json({ message: "unauthorized request" });
+                next(new Error("ERROR_UNAUTHORIZED"));
             } else if (userHasRated) {
-                res.status(400).json({ message: "Une note a déjà été donnée par cet utilisateur" });
+                next(new Error("ERROR_DUPLICATE_RATE"));
             } else {
                 book.ratings.push({ userId, grade: rating });
 
@@ -135,8 +135,8 @@ exports.addRating = (req, res, next) => {
                     .then(() => {
                         res.status(201).json(book);
                     })
-                    .catch((error) => next(error));
+                    .catch(() => next(new Error("ERROR_SAVING_BOOK")));
             }
         })
-        .catch((error) => next(error));
+        .catch(() => next(new Error("ERROR_FINDING_BOOK")));
 };
