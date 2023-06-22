@@ -51,7 +51,7 @@ exports.createBook = (req, res, next) => {
         .then(() => {
             res.status(201).json({ message: "Objet enregistré !" });
         })
-        .catch(() => {
+        .catch((error) => {
             deleteImage(`backend/images/${imageName}`);
             if (error.name === "ValidationError") {
                 res.status(400).json({ error });
@@ -87,7 +87,7 @@ exports.putOneBook = (req, res, next) => {
                         }
                         res.status(200).json({ message: "Objet modifié " });
                     })
-                    .catch(() => {
+                    .catch((error) => {
                         deleteImage(`backend/images/${imageName}`);
                         if (error.name === "ValidationError") {
                             res.status(400).json({ error });
@@ -151,7 +151,7 @@ exports.addRating = (req, res, next) => {
                     .then(() => {
                         res.status(201).json(book);
                     })
-                    .catch(() => {
+                    .catch((error) => {
                         if (error.name === "ValidationError") {
                             res.status(400).json({ error });
                         } else {

@@ -15,7 +15,7 @@ exports.signup = (req, res, next) => {
                 .then(() => {
                     res.status(201).json({ message: "Utilisateur créé" });
                 })
-                .catch(() => {
+                .catch((error) => {
                     if (error.name === "ValidationError") {
                         res.status(400).json({ error });
                     } else {
