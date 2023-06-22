@@ -15,22 +15,31 @@ exports.signup = (req, res, next) => {
                 .then(() => {
                     res.status(201).json({ message: "Utilisateur créé" });
                 })
-                .catch(() => next(new Error("ERROR_CREATING_USER")));
+                .catch(() => {
+                    if (error.name === "ValidationError") {
+                        res.status(400).json({ error });
+                    } else {
+                        res.status(500).json({ error });
+                    }
+                });
         })
-        .catch(() => next(new Error("ERROR_HASHING_PASSWORD")));
+        .catch(() => {
+            res.status(500).json({ error });
+        });
 };
 
 exports.login = (req, res, next) => {
     User.findOne({ email: req.body.email })
         .then((user) => {
             if (!user) {
-                next(new Error("ERROR_USER_NOT_FOUND"));
+                console.log(!user);
+                return res.status(401).json({ message: "Paire login/mot de passe incorrecte" });
             } else {
                 bcrypt
                     .compare(req.body.password, user.password)
                     .then((valid) => {
                         if (!valid) {
-                            next(new Error("ERROR_INVALID_PASSWORD"));
+                            return res.status(401).json({ message: "Paire login/mot de passe incorrecte" });
                         } else {
                             res.status(200).json({
                                 userId: user._id,
@@ -38,8 +47,12 @@ exports.login = (req, res, next) => {
                             });
                         }
                     })
-                    .catch(() => next(new Error("ERROR_COMPARING_PASSWORD")));
+                    .catch(() => {
+                        res.status(500).json({ error });
+                    });
             }
         })
-        .catch(() => next(new Error("ERROR_FINDING_USER")));
+        .catch(() => {
+            res.status(404).json({ error });
+        });
 };

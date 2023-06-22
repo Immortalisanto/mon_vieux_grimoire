@@ -6,7 +6,9 @@ exports.getAllBooks = (req, res, next) => {
         .then((books) => {
             res.status(200).json(books);
         })
-        .catch(() => next(new Error("ERROR_FINDING_BOOK")));
+        .catch(() => {
+            res.status(404).json({ error });
+        });
 };
 
 exports.getOneBook = (req, res, next) => {
@@ -14,7 +16,9 @@ exports.getOneBook = (req, res, next) => {
         .then((book) => {
             res.status(200).json(book);
         })
-        .catch(() => next(new Error("ERROR_FINDING_BOOK")));
+        .catch(() => {
+            res.status(404).json({ error });
+        });
 };
 
 exports.getThreeBestRating = async (req, res, next) => {
@@ -28,7 +32,7 @@ exports.getThreeBestRating = async (req, res, next) => {
 
         res.json(formattedBooks);
     } catch (error) {
-        next(new Error("ERROR_FINDING_BOOK"));
+        return res.status(404).json({ error });
     }
 };
 
@@ -49,7 +53,11 @@ exports.createBook = (req, res, next) => {
         })
         .catch(() => {
             deleteImage(`backend/images/${imageName}`);
-            next(new Error("ERROR_SAVING_BOOK"));
+            if (error.name === "ValidationError") {
+                res.status(400).json({ error });
+            } else {
+                res.status(500).json({ error });
+            }
         });
 };
 
@@ -68,7 +76,7 @@ exports.putOneBook = (req, res, next) => {
         .then((book) => {
             if (book.userId != req.auth.userId) {
                 deleteImage(`backend/images/${imageName}`);
-                next(new Error("ERROR_UNAUTHORIZED"));
+                return res.status(403).json({ message: "unauthorized request" });
             } else {
                 const oldImage = book.imageUrl.replace(`${req.protocol}://${req.get("host")}/`, "backend/");
 
@@ -81,13 +89,17 @@ exports.putOneBook = (req, res, next) => {
                     })
                     .catch(() => {
                         deleteImage(`backend/images/${imageName}`);
-                        next(new Error("ERROR_UPDATE_BOOK"));
+                        if (error.name === "ValidationError") {
+                            res.status(400).json({ error });
+                        } else {
+                            res.status(500).json({ error });
+                        }
                     });
             }
         })
         .catch(() => {
             deleteImage(`backend/images/${imageName}`);
-            next(new Error("ERROR_FINDING_BOOK"));
+            res.status(404).json({ error });
         });
 };
 
@@ -95,7 +107,7 @@ exports.deleteOneBook = (req, res, next) => {
     Book.findOne({ _id: req.params.id })
         .then((book) => {
             if (book.userId != req.auth.userId) {
-                next(new Error("ERROR_UNAUTHORIZED"));
+                return res.status(403).json({ message: "unauthorized request" });
             } else {
                 const oldImage = book.imageUrl.replace(`${req.protocol}://${req.get("host")}/`, "backend/");
                 deleteImage(oldImage);
@@ -103,10 +115,14 @@ exports.deleteOneBook = (req, res, next) => {
                     .then(() => {
                         res.status(200).json({ message: "Livre supprimé" });
                     })
-                    .catch(() => next(new Error("ERROR_DELETE_BOOK")));
+                    .catch(() => {
+                        res.status(500).json({ error });
+                    });
             }
         })
-        .catch(() => next(new Error("ERROR_FINDING_BOOK")));
+        .catch(() => {
+            res.status(404).json({ error });
+        });
 };
 
 exports.addRating = (req, res, next) => {
@@ -117,9 +133,9 @@ exports.addRating = (req, res, next) => {
             const userHasRated = book.ratings.some((rating) => rating.userId === userId);
 
             if (userId != req.auth.userId) {
-                next(new Error("ERROR_UNAUTHORIZED"));
+                return res.status(403).json({ message: "unauthorized request" });
             } else if (userHasRated) {
-                next(new Error("ERROR_DUPLICATE_RATE"));
+                return res.status(400).json({ error });
             } else {
                 book.ratings.push({ userId, grade: rating });
 
@@ -135,8 +151,16 @@ exports.addRating = (req, res, next) => {
                     .then(() => {
                         res.status(201).json(book);
                     })
-                    .catch(() => next(new Error("ERROR_SAVING_BOOK")));
+                    .catch(() => {
+                        if (error.name === "ValidationError") {
+                            res.status(400).json({ error });
+                        } else {
+                            res.status(500).json({ error });
+                        }
+                    });
             }
         })
-        .catch(() => next(new Error("ERROR_FINDING_BOOK")));
+        .catch(() => {
+            res.status(404).json({ error });
+        });
 };
